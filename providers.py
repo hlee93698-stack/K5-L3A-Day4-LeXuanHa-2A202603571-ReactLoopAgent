@@ -75,7 +75,9 @@ class Provider:
             else:
                 native.append({'role': 'user', 'content': m['content']})
         tools = [{'name': x['function']['name'], 'description': x['function']['description'], 'input_schema': x['function']['parameters']} for x in schemas]
-        payload = {'model': self.model, 'max_tokens': 1024, 'system': system, 'messages': native}
+        # 1024 quá thấp cho model có adaptive thinking (thinking tokens tính vào max_tokens).
+        max_tokens = int(os.getenv('ANTHROPIC_MAX_TOKENS', '4096'))
+        payload = {'model': self.model, 'max_tokens': max_tokens, 'system': system, 'messages': native}
         if tools:
             payload['tools'] = tools
         data = post_json(self.url, {'x-api-key': self.key, 'anthropic-version': '2023-06-01'}, payload)
